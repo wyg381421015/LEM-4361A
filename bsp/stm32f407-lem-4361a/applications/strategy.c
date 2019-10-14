@@ -151,7 +151,7 @@ static void CtrlData_RecProcess(void)
 	
 	//收到充电计划
 //	if(rt_event_recv(&PowerCtrlEvent, ChgPlanIssue_EVENT,RT_EVENT_FLAG_OR|RT_EVENT_FLAG_OR|RT_EVENT_FLAG_CLEAR,100, &chgplanIssue) == RT_EOK)
-	if(strategy_event_get(ChgPlanIssue_EVENT)==0)
+	if(strategy_event_get()!=0)
 	{
 		c_rst = CtrlUnit_RecResp(Cmd_ChgPlanIssue,&Chg_Strategy,0);//取值
 		if((Chg_Strategy.ucChargeMode == 1)&&(Chg_Strategy.ucDecType == 1))
@@ -165,7 +165,7 @@ static void CtrlData_RecProcess(void)
 	
 	//收到充电计划调整
 //	if(rt_event_recv(&PowerCtrlEvent, ChgPlanAdjust_EVENT,RT_EVENT_FLAG_OR|RT_EVENT_FLAG_CLEAR,100, &chgplanIssueAdj) == RT_EOK)
-	if(strategy_event_get(ChgPlanAdjust_EVENT)==0)
+	if(strategy_event_get()!=0)
 	{
 		c_rst = CtrlUnit_RecResp(Cmd_ChgPlanAdjust,&Adj_Chg_Strategy,0);//取值	
 		if((Chg_Strategy.ucChargeMode == 1)&&(Chg_Strategy.ucDecType == 2))
@@ -179,7 +179,7 @@ static void CtrlData_RecProcess(void)
 	
 	//收到启动充电命令
 //	if(rt_event_recv(&PowerCtrlEvent, StartChg_EVENT,RT_EVENT_FLAG_OR|RT_EVENT_FLAG_CLEAR,100, &startchg) == RT_EOK)
-	if(strategy_event_get(StartChg_EVENT)==0)
+	if(strategy_event_get()!=0)
 	{
 		startchg_flag = TRUE;
 		rt_lprintf("[hplc]  (%s)  收到启动充电命令  \n",__func__);
@@ -202,7 +202,7 @@ static void CtrlData_RecProcess(void)
 	}
 	//收到停止充电命令
 //	if(rt_event_recv(&PowerCtrlEvent, StopChg_EVENT,RT_EVENT_FLAG_OR|RT_EVENT_FLAG_CLEAR,100, &stopchg) == RT_EOK)
-	if(strategy_event_get(StopChg_EVENT)==0)
+	if(strategy_event_get()!=0)
 	{
 		stopchg_flag = TRUE;		
 		rt_lprintf("[hplc]  (%s)  收到停止充电命令  \n",__func__);  

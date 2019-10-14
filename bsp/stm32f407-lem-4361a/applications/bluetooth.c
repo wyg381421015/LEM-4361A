@@ -37,16 +37,16 @@ char* AT_CmdDef[]={
 
 	"ATE0\r\n",		//关闭回显功能
 	"AT+BLEINIT=2\r\n",			//BLE 初始化，设置为Server模式
-	"AT+BLENAME=\"LN000000000001\"\r\n",	//设置 BLE 设备名称
-//	"AT+BLENAME=\"[NR000000000001]\"\r\n",	//设置 BLE 设备名称
+//	"AT+BLENAME=\"LN000000000001\"\r\n",	//设置 BLE 设备名称
+	"AT+BLENAME=\"[NR000000000001]\"\r\n",	//设置 BLE 设备名称
 	"AT+BLEADDR=1,\"f1:f2:f3:f4:f5:f6\"\r\n",
 	
 	"AT+BLEGATTSSRVCRE\r\n",	//创建GATTS 服务
 	"AT+BLEGATTSSRVSTART\r\n",	//开启GATTS 服务
 	
 	"AT+BLEADVPARAM=32,64,0,1,7\r\n",							//配置广播参数
-	"AT+BLEADVDATA=\"0201060F094C4E3030303030303030303030310303E0FF\"\r\n",//配置扫描响应数据
-//	"AT+BLEADVDATA=\"02010611095B4E523030303030303030303030315D0303E0FF\"\r\n",//配置扫描响应数据		
+//	"AT+BLEADVDATA=\"0201060F094C4E3030303030303030303030310303E0FF\"\r\n",//配置扫描响应数据
+	"AT+BLEADVDATA=\"02010611095B4E523030303030303030303030315D0303E0FF\"\r\n",//配置扫描响应数据		
 	"AT+BLEADVSTART\r\n",		//开始广播
 	
 	"AT+BLESPPCFG=1,1,1,1,1\r\n",	//配置BLE透传模式
@@ -577,7 +577,7 @@ rt_err_t BLE_698_Security_Request_CipherText_Analysis(struct _698_BLE_FRAME *dev
 	
 //	my_printf((char*)stBLE_Esam_Comm.Tx_data,stBLE_Esam_Comm.DataTx_len,MY_HEX,1,FUNC_PRINT_RX);
 	
-	if(ESAM_Communicattion(HOST_SESS_VERI_MAC,&stBLE_Esam_Comm) == RT_EOK)//解密验证mac
+	if(ESAM_Communicattion(APP_SESS_VERI_MAC,&stBLE_Esam_Comm) == RT_EOK)//解密验证mac
 	{
 //		rt_kprintf("[bluetooth]:sess veri mac ok ,will analysis data.\n");
 		my_printf((char*)stBLE_Esam_Comm.Rx_data,stBLE_Esam_Comm.DataRx_len,MY_HEX,1,FUNC_PRINT_RX);
@@ -636,7 +636,7 @@ rt_err_t BLE_698_Security_Request_Analysis_and_Response(struct _698_BLE_FRAME *d
 rt_err_t BLE_698_ESAM_SESS_INTI_Package(struct _698_BLE_FRAME *dev_recv,ScmUart_Comm* stData)
 {
 	rt_uint8_t	Esam_Version[5];//ESAM 版本号
-	rt_uint8_t	Esam_KEY_R2[16];//R2数据
+//	rt_uint8_t	Esam_KEY_R2[16];//R2数据
 	rt_uint8_t	Esam_KEY_DATA2[16];//DATA2数据
 	rt_uint8_t 	i,ptr,lenth,total_lenth;
 	rt_uint16_t Esam_endata_len;
@@ -667,6 +667,7 @@ rt_err_t BLE_698_ESAM_SESS_INTI_Package(struct _698_BLE_FRAME *dev_recv,ScmUart_
 	
 	
 	memcpy(stBLE_Esam_Comm.Tx_data,&dev_recv->apdu.apdu_data[11],16);//R1
+	memcpy(Esam_KEY_R1,&dev_recv->apdu.apdu_data[11],16);
 	memcpy(stBLE_Esam_Comm.Tx_data+16,Esam_Version,5);
 	stBLE_Esam_Comm.DataTx_len = 21;
 	
@@ -723,8 +724,8 @@ rt_err_t BLE_698_ESAM_SESS_INTI_Package(struct _698_BLE_FRAME *dev_recv,ScmUart_
 			stData->Tx_data[ptr++]				= Data_octet_string;//数据类型
 			stData->Tx_data[ptr++]				= Esam_endata_len+2;
 			
-			stData->Tx_data[ptr++]				= dev_recv->apdu.apdu_data[4];
-			stData->Tx_data[ptr++]				= dev_recv->apdu.apdu_data[5];//版本号
+			stData->Tx_data[ptr++]				= dev_recv->apdu.apdu_data[8];
+			stData->Tx_data[ptr++]				= dev_recv->apdu.apdu_data[9];//版本号
 			
 			for(i = 0;i < Esam_endata_len;i++)
 			{
@@ -793,16 +794,16 @@ rt_err_t BLE_698_ESAM_SESS_KEY_Package(struct _698_BLE_FRAME *dev_recv,ScmUart_C
 		if(memcmp(Esam_KEY_R3,Esam_KEY_R1,16) == 0)
 		{
 			ptr = 0;
-			stData->Tx_data[ptr++] 							= dev_recv->head;
-			stData->Tx_data[ptr++] 							= dev_recv->datalenth.uclenth[0];
-			stData->Tx_data[ptr++] 							= dev_recv->datalenth.uclenth[1];
+			stData->Tx_data[ptr++] 				= dev_recv->head;
+			stData->Tx_data[ptr++] 				= dev_recv->datalenth.uclenth[0];
+			stData->Tx_data[ptr++] 				= dev_recv->datalenth.uclenth[1];
 			
-			stData->Tx_data[ptr++] 							= dev_recv->control.ucControl|0x80;
-			stData->Tx_data[ptr++] 							= dev_recv->_698_ADDR.S_ADDR.SA;
+			stData->Tx_data[ptr++] 				= dev_recv->control.ucControl|0x80;
+			stData->Tx_data[ptr++] 				= dev_recv->_698_ADDR.S_ADDR.SA;
 
 			lenth = dev_recv->_698_ADDR.S_ADDR.B.uclenth+1;
 			for(i=0;i<lenth;i++)
-				stData->Tx_data[ptr++] 					= dev_recv->_698_ADDR.addr[i];
+				stData->Tx_data[ptr++] 			= dev_recv->_698_ADDR.addr[i];
 			stData->Tx_data[ptr++]				= dev_recv->_698_ADDR.CA;
 			stData->Tx_data[ptr++]				= dev_recv->HCS.ucHcs[0];
 			stData->Tx_data[ptr++]				= dev_recv->HCS.ucHcs[1];
@@ -868,7 +869,7 @@ rt_err_t BLE_698_Action_Request_Normal_Analysis(struct _698_BLE_FRAME *dev_recv,
 	
 	switch(apdu_oad)
 	{
-		case 0xF1000B00:				//获取电表地址
+		case 0xF1000B00:				//
 		{
 			BLE_698_ESAM_SESS_INTI_Package(dev_recv,stData);
 			break;
@@ -1136,7 +1137,7 @@ static void bluetooth_thread_entry(void *parabluetooth)
 	rt_device_set_rx_indicate(bluetooth_serial, bluetooth_rx_ind);
 	
 	rt_pin_mode(BLE_PIN, PIN_MODE_OUTPUT);
-	rt_pin_write(BLE_PIN, PIN_LOW);	//模块上电
+	BLE_PWR_ON()	//模块上电
 	
 	
 	rt_thread_mdelay(3000);

@@ -287,7 +287,9 @@ rt_err_t ESAM_Communicattion(ESAM_CMD cmd,ScmEsam_Comm* l_stEsam_Comm)
 			sendbuf[ptr++] = 0x00;
 			sendbuf[ptr++] = (lenth>>8)&0xff;
 			sendbuf[ptr++] = (lenth&0xff);
-			break;	
+			break;
+		case APP_SESS_VERI_MAC:
+			break;
 		case HOST_READ:
 //			sendbuf[ptr++] = 0x81;
 //			sendbuf[ptr++] = 0x1c;
@@ -324,6 +326,9 @@ rt_err_t ESAM_Communicattion(ESAM_CMD cmd,ScmEsam_Comm* l_stEsam_Comm)
 	
 	stEsam_Comm.DataTx_len = ptr+lenth+1;
 	memcpy(stEsam_Comm.Tx_data,sendbuf,stEsam_Comm.DataTx_len);
+	
+	my_printf((char*)stEsam_Comm.Tx_data,stEsam_Comm.DataTx_len,MY_HEX,1,"[Esam]:TX:");
+	
 	
 	res = ESAM_Send_and_Recv(spi_esam,&stEsam_Comm);
 	if(res == RT_EOK)
@@ -398,12 +403,14 @@ rt_err_t ESAM_Send_and_Recv(struct rt_spi_device *device,ScmEsam_Comm* l_stEsam_
 						
 						l_stEsam_Comm->DataRx_len = lenth+4;
 									
-						rt_kprintf("[Esam]:RX:");
-						for(count = 0; count <lenth+4; count++)
-						{
-							rt_kprintf("%02X ",l_stEsam_Comm->Rx_data[count]);
-						}
-						rt_kprintf("  \n");
+//						rt_kprintf("[Esam]:RX:");
+//						for(count = 0; count <lenth+4; count++)
+//						{
+//							rt_kprintf("%02X ",l_stEsam_Comm->Rx_data[count]);
+//						}
+//						rt_kprintf("  \n");
+						
+						my_printf((char*)l_stEsam_Comm->Rx_data,l_stEsam_Comm->DataRx_len,MY_HEX,1,"[Esam]:RX:");
 						
 						return RT_EOK;
 					}
@@ -414,12 +421,14 @@ rt_err_t ESAM_Send_and_Recv(struct rt_spi_device *device,ScmEsam_Comm* l_stEsam_
 						rt_lprintf("Esam]:spi esam recv data check error!!!\n");
 					}
 					
-					rt_kprintf("[Esam]:RX:");
-					for(count = 0; count <lenth+4; count++)
-					{
-						rt_kprintf("%02X ",l_stEsam_Comm->Rx_data[count]);
-					}
-					rt_kprintf("  \n");
+					my_printf((char*)l_stEsam_Comm->Rx_data,l_stEsam_Comm->DataRx_len,MY_HEX,1,"[Esam]:RX:");
+					
+//					rt_kprintf("[Esam]:RX:");
+//					for(count = 0; count <lenth+4; count++)
+//					{
+//						rt_kprintf("%02X ",l_stEsam_Comm->Rx_data[count]);
+//					}
+//					rt_kprintf("  \n");
 				}
 			}
 			else

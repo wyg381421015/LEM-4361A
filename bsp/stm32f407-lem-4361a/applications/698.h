@@ -14,16 +14,32 @@ extern rt_uint32_t strategy_event;
 
 
 
+extern CHARGE_STRATEGY charge_strategy_ChgPlanIssue;//充电计划下发
+
+extern CHARGE_STRATEGY charge_strategy_ChgRecord;   //上送充电订单
+extern CHARGE_STRATEGY_RSP ChgPlanIssue_rsp;
+
+
+extern CHARGE_STRATEGY charge_strategy_ChgPlanAdjust;
+
+extern CHARGE_STRATEGY_RSP ChgPlanAdjust_rsp;
+
+
+
+
+
 /****************宏定义**********************************/
 //定义事件类型
 typedef enum {
-	CTRL_NO_EVENT             =0x00000000,
+	CTRL_NO_EVENT             	=0x00000000,
 	ChgPlanIssue_EVENT       	=0x00000001,        	//充电计划下发事件
-	ChgPlanIssueGet_EVENT     =0x00000002,      		//充电计划召测事件	
+	ChgPlanIssueGet_EVENT     	=0x00000002,      		//充电计划召测事件	
 	ChgPlanAdjust_EVENT    		=0x00000004,        	//充电计划调整事件
-	StartChg_EVENT						=0x00000008,          //启动充电事件
-	StopChg_EVENT							=0x00000010,          //停止充电事件		          			
-} CTRL_EVENT_TYPE;//控制器→路由器的命令事件
+	StartChg_EVENT				=0x00000008,          	//启动充电事件
+	StopChg_EVENT				=0x00000010,          	//停止充电事件
+	PowerAdj_EVENT				=0x00000020,          	//调整功率事件
+	AskState_EVENT				=0x00000040,          	//查询工作状态事件
+}CTRL_EVENT_TYPE;//控制器→路由器的命令事件
 
 
 
@@ -46,17 +62,20 @@ typedef struct
 
 typedef enum {
 	Cmd_ChgPlanIssue=0, 					//充电计划下发
-	Cmd_ChgPlanAdjust,                 		//充电计划调整
 	Cmd_ChgPlanIssueAck,                 	//充电计划下发应答
-	Cmd_ChgPlanAdjustAck,                 //充电计划调整应答
-	Cmd_StartChg,								//启动充电参数下发
+	Cmd_ChgPlanAdjust,                 		//充电计划调整
+	Cmd_ChgPlanAdjustAck,                 	//充电计划调整应答
+	Cmd_StartChg,							//启动充电参数下发
 	Cmd_StartChgAck,						//启动充电应答
-	Cmd_StopChg,								//停止充电参数下发
+	Cmd_StopChg,							//停止充电参数下发
 	Cmd_StopChgAck,							//停止充电应答
-	Cmd_ChgRecord,													//上送充电订单
-	Cmd_ChgPlanExeState,                    //上送充电计划执行状态
+	Cmd_PowerAdj,							//功率调节参数下发
+	Cmd_PowerAdjAck,						//功率调节应答
+	Cmd_ChgPlanExeState,                    //充电计划执行状态查询
+	Cmd_ChgPlanExeStateAck,                 //充电计划执行应答
+	Cmd_ChgRecord,							//上送充电订单
 	Cmd_DeviceFault,                      	//上送路由器异常状态
-	Cmd_PileFault,                 					//上送充电桩异常状态
+	Cmd_PileFault,                 			//上送充电桩异常状态
 	Cmd_ChgPlanIssueGetAck,
 }COMM_CMD_C;//路由器→控制器的命令号
 #define COMM_CMD_C rt_uint32_t
@@ -76,7 +95,7 @@ typedef enum {
 #define  get_request 5
 #define  set_request 6	
 #define  action_request 7
-#define  report_response 8
+#define  report_response 8 //上报应答
 #define  proxy_request 9
 #define  connect_response 0x82
 #define  release_response 0x83
@@ -84,7 +103,7 @@ typedef enum {
 #define  get_response 0x85
 #define  set_response 0x86
 #define  action_response 0x87
-#define  report_notification 0x88
+#define  report_notification 0x88  //上报通知
 #define  proxy_response 0x89
 #define  security_request 16
 #define  security_response 144
@@ -817,7 +836,8 @@ struct _698_STATE        //地址域a
 	int len_left;
 	int len_all;	
 	int len_sa;
-	int FE_no;	
+	int FE_no;
+	int session_key_negotiation;
 };
 
 
@@ -922,8 +942,8 @@ int my_strcpy_char(char *dst,char *src,int startSize,int size);
 int action_response_package(struct  _698_FRAME  *_698_frame_rev,struct _698_STATE  * priv_698_state,struct CharPointDataManage * hplc_data);
 int Report_Cmd_ChgRecord(struct CharPointDataManage *hplc_data,struct _698_STATE  * priv_698_state);
 int Report_Cmd_ChgPlanExeState(struct CharPointDataManage *hplc_data,struct _698_STATE  * priv_698_state);
-int check_afair_from_botom(struct _698_STATE  * priv_698_state,struct CharPointDataManage *data_rev,struct CharPointDataManage *data_tx);
-extern rt_uint8_t strategy_event_get(COMM_CMD_C cmd);
+int check_afair_from_botom(struct _698_STATE  * priv_698_state,struct CharPointDataManage *data_tx);
+extern rt_uint32_t strategy_event_get(void);
 extern rt_uint8_t strategy_event_send(COMM_CMD_C cmd);
 int package_for_test(struct  _698_FRAME  *_698_frame_rev,struct _698_STATE  * priv_698_state,struct CharPointDataManage * hplc_data);
 int hplc_tx(struct CharPointDataManage *hplc_data);
@@ -932,11 +952,12 @@ int charge_exe_state_package(CHARGE_EXE_STATE *priv_struct,struct CharPointDataM
 int plan_fail_event_package(PLAN_FAIL_EVENT *priv_struct,struct CharPointDataManage * hplc_data);
 int Report_Cmd_DeviceFault(struct CharPointDataManage *hplc_data,struct _698_STATE  * priv_698_state);
 int Report_Cmd_PileFault(struct CharPointDataManage *hplc_data,struct _698_STATE  * priv_698_state);
-
-
-
-
-
+void hplc_PWR_ON(void);
+void hplc_PWR_OFF(void);
+int security_get_package(struct _698_STATE  * priv_698_state,struct CharPointDataManage * hplc_data);
+rt_uint32_t my_strategy_event_get(void);
+int action_response_notice_user(struct  _698_FRAME  *_698_frame_rev,struct _698_STATE  * priv_698_state);
+int action_notice_user_normal(struct  _698_FRAME  *_698_frame_rev,struct _698_STATE  * priv_698_state);
 
 
 
