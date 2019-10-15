@@ -4,27 +4,6 @@
 #include <rtthread.h>
 #include <rtdevice.h>
 
-/***********能源路由器参数配置结构体******************************/
-typedef struct
-{
-	char cAssetNum[23];//路由器资产编号 字符串 maxlen=22
-	
-}ScmRouterPata_Msg;//路由器参数
-extern ScmRouterPata_Msg  stRouterPata_msg;
-/****************************************************************/
-
-typedef struct
-{
-	char cPlieAddr[17];//充电桩编号  字符串 maxlen=16
-	unsigned char ucInterfaceNum;//充电接口标识
-	char cInstallation[40];//充电桩安装地址  maxlen = 40
-	unsigned long ulMinimunPow;//最小充电功率
-	unsigned long ulRatePow;//额定功率
-	unsigned char ucWake;//是否支持唤醒
-}ScmChargePilePara;//充电桩参数
-
-
-
 
 typedef enum {
 	Cmd_MeterNumWr=0,                   //0

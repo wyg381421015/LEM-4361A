@@ -6,6 +6,16 @@
 //********************************************************************************
 //修改说明
 //无
+////////////////////////////////////// 全局变量定义区 //////////////////////////////////////////// 
+
+
+const char ProgramVersion[8] = {"V1.0.06"}; // 版本号 //故意给数组预留一个空位存放结束符 '\0'
+CCMRAM char Printf_Buffer[1024];
+CCMRAM char Srintf_Buffer[1024];
+//rt_mq_t storage_mq;
+ROUTER_IFO_UNIT RouterIfo;
+ROUTER_FAULT Fault;
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 unsigned char DEBUG_MSH = 1;
 
@@ -254,13 +264,7 @@ unsigned long timebin2long(unsigned char *buf)
     tlong += (uint32_t)((uint8_t)ch);
     return tlong;
 }
-////////////////////////////////////////////////////////////////////////////////// 
 
-
-const char ProgramVersion[8] = {"V1.0.06"}; // 版本号 //故意给数组预留一个空位存放结束符 '\0'
-CCMRAM char Printf_Buffer[1024];
-CCMRAM char Sprintf_Buffer[1024];
-//rt_mq_t storage_mq;
 
 /**************************************************************
  * 函数名称: u8 str2bcd(u8*src,u8 *dest)
@@ -443,10 +447,9 @@ void my_printf(char* buf,rt_uint32_t datalenth,rt_uint8_t type,rt_uint8_t cmd,ch
 		{
 			for(i = 0; i <datalenth; i++)
 			{			 
-				sprintf((char*)Sprintf_Buffer,"%02X",*(buf+i)); 
-				strcat((char*)Printf_Buffer,(const char*)Sprintf_Buffer);								
+				sprintf((char*)Srintf_Buffer,"%02X",*(buf+i)); 
+				strcat((char*)Printf_Buffer,(const char*)Srintf_Buffer);								
 			}
-			strcat((char*)Printf_Buffer,(const char*)"\0");
 			if(cmd)
 				rt_kprintf("%s%s\n",function,Printf_Buffer);
 			else

@@ -7,6 +7,7 @@
 #include <storage.h>
 #include <meter.h>
 #include "strategy.h"
+#include "global.h"
 
 #ifdef RT_USING_DFS
 #include <dfs_fs.h>
@@ -53,7 +54,8 @@ const char* _dir_name[MAX_DIR_NUM]={
 	"/EventRecord",
 	"/LOG",
 };
-ScmRouterPata_Msg  stRouterPata_msg;
+
+//ROUTER_IFO_UNIT RouterIfo;
 
 __align(4) char *Para_Buff = NULL; //固化参数buff
 const char* METER_POWER_PATH=(const char*)"/Meter";
@@ -967,9 +969,9 @@ static int Router_Para_Storage(const char *file,void *Storage_Para,rt_uint32_t d
 		strcat((char*)Para_Buff,(const char*)buffer);
 		
 		strcat((char*)Para_Buff,(const char*)"cAssetNum=");
-		for(int i=0;i<sizeof(stRouterPata_msg.cAssetNum);i++)
+		for(int i=0;i<sizeof(RouterIfo.AssetNum);i++)
 		{
-			sprintf((char*)buffer,"%02X",stRouterPata_msg.cAssetNum[i]);// 表号
+			sprintf((char*)buffer,"%02X",RouterIfo.AssetNum[i]);// 表号
 			strcat((char*)Para_Buff,(const char*)buffer);
 		}
 		strcat((char*)Para_Buff,(const char*)"\n");		
@@ -1056,8 +1058,8 @@ static int Router_Para_Storage(const char *file,void *Storage_Para,rt_uint32_t d
 		{
 			if(strcmp((const char*)fpname,(const char*)"cAssetNum")==0)
 			{
-				fpoint = get_pvalue(fpoint,(rt_uint32_t*)&stRouterPata_msg.cAssetNum,sizeof(stRouterPata_msg.cAssetNum));//返回当前文件读指针
-				rt_lprintf("[storage]:cAssetNum：%s\n",stRouterPata_msg.cAssetNum);
+				fpoint = get_pvalue(fpoint,(rt_uint32_t*)&RouterIfo.AssetNum,sizeof(RouterIfo.AssetNum));//返回当前文件读指针
+				rt_lprintf("[storage]:cAssetNum：%s\n",RouterIfo.AssetNum);
 
 			}			
 			else
@@ -4565,8 +4567,8 @@ int storage_thread_init(void)
 /**********************************************************************************************/	
 /**********************************************************************************************/
 /**********************************************************************************************/	
-	memcpy(stRouterPata_msg.cAssetNum, "0011223344000000000011", sizeof(stRouterPata_msg.cAssetNum));// 表号
-    rt_lprintf("[storage]:电表资产号：%s\n",stRouterPata_msg.cAssetNum);	
+	memcpy(RouterIfo.AssetNum, "0011223344000000000011", sizeof(RouterIfo.AssetNum));// 表号
+    rt_lprintf("[storage]:电表资产号：%s\n",RouterIfo.AssetNum);	
 /**********************************************************************************************/	
 /**********************************************************************************************/
 /**********************************************************************************************/	
@@ -4633,12 +4635,12 @@ int GetStorageData(STORAGE_CMD_ENUM cmd,void *Storage_Para,rt_uint32_t datalen)
 		case Cmd_MeterNumRd://
 			ret = Router_Para_Storage(ROUTER_PARA_PATH_FILE,Storage_Para,datalen,READ);
 			// 表号		
-			*(char*)Storage_Para = ((*((char*)(stRouterPata_msg.cAssetNum)+10)-'0')<<4) + *((char*)(stRouterPata_msg.cAssetNum) + 11)-'0';//
-			*(((char*)Storage_Para)+1) = ((*((char*)(stRouterPata_msg.cAssetNum)+12)-'0')<<4) + *((char*)(stRouterPata_msg.cAssetNum) + 13)-'0';//
-			*(((char*)Storage_Para)+2) = ((*((char*)(stRouterPata_msg.cAssetNum)+14)-'0')<<4) + *((char*)(stRouterPata_msg.cAssetNum) + 15)-'0';//
-			*(((char*)Storage_Para)+3) = ((*((char*)(stRouterPata_msg.cAssetNum)+16)-'0')<<4) + *((char*)(stRouterPata_msg.cAssetNum) + 17)-'0';//
-			*(((char*)Storage_Para)+4) = ((*((char*)(stRouterPata_msg.cAssetNum)+18)-'0')<<4) + *((char*)(stRouterPata_msg.cAssetNum) + 19)-'0';//
-			*(((char*)Storage_Para)+5) = ((*((char*)(stRouterPata_msg.cAssetNum)+20)-'0')<<4) + *((char*)(stRouterPata_msg.cAssetNum) + 21)-'0';//
+			*(char*)Storage_Para = ((*((char*)(RouterIfo.AssetNum)+10)-'0')<<4) + *((char*)(RouterIfo.AssetNum) + 11)-'0';//
+			*(((char*)Storage_Para)+1) = ((*((char*)(RouterIfo.AssetNum)+12)-'0')<<4) + *((char*)(RouterIfo.AssetNum) + 13)-'0';//
+			*(((char*)Storage_Para)+2) = ((*((char*)(RouterIfo.AssetNum)+14)-'0')<<4) + *((char*)(RouterIfo.AssetNum) + 15)-'0';//
+			*(((char*)Storage_Para)+3) = ((*((char*)(RouterIfo.AssetNum)+16)-'0')<<4) + *((char*)(RouterIfo.AssetNum) + 17)-'0';//
+			*(((char*)Storage_Para)+4) = ((*((char*)(RouterIfo.AssetNum)+18)-'0')<<4) + *((char*)(RouterIfo.AssetNum) + 19)-'0';//
+			*(((char*)Storage_Para)+5) = ((*((char*)(RouterIfo.AssetNum)+20)-'0')<<4) + *((char*)(RouterIfo.AssetNum) + 21)-'0';//
 
 			break;
 		case Cmd_MeterPowerRd://

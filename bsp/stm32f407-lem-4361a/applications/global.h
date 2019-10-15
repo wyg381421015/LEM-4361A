@@ -55,16 +55,23 @@ extern STR_SYSTEM_TIME System_Time_STR;
 
 /******************************** 路由器相关信息 ***********************************/	//zcx190710
 typedef enum {
-	DevSt_Starting=0,			// 开机中
-	DevSt_StandbyOK,          	// 待机正常
-	DevSt_InCharging,           // 充电中
-	DevSt_DisCharging,          // 放电中
-	DevSt_Charged,				// 充放电完成（3秒回待机）
-	DevSt_Fault,           		// 故障
-	DevSt_Update,				// 升级中
-}DEVICE_WORKSTATE;/*路由器状态*/
+	RtSt_Starting=0,			// 开机中
+	RtSt_StandbyOK,          	// 待机正常
+	RtSt_InCharging,           	// 充电中
+	RtSt_DisCharging,          	// 放电中
+	RtSt_Charged,				// 充放电完成（3秒回待机）
+	RtSt_Fault,           		// 故障
+	RtSt_Update,				// 升级中
+}ROUTER_WORKSTATE;/*路由器状态*/
 
 
+typedef struct
+{
+	char AssetNum[23];				//路由器资产编号 字符串 maxlen=22
+	rt_uint8_t WorkState;			//路由器运行状态
+}ROUTER_IFO_UNIT;/*路由器信息单元*/
+extern ROUTER_IFO_UNIT RouterIfo;
+	
 typedef struct
 {
 	char UserID[65];   			//用户id  visible-string（SIZE(64)）
@@ -77,50 +84,29 @@ typedef struct
 	char kAddress[17];   		//通讯地址	visible-string（SIZE(16)）
 	char MeterNum[9];   		//表号  visible-string（SIZE(8)）
 	char KeyNum[9];				//密钥信息	visible-string（SIZE(8)）	
-}KEYINFO_UNIT;/*路由器密钥信息单元*/
+}KEY_INFO_UNIT;/*路由器密钥信息单元*/
 
 
 
 /******************************** 充电桩相关信息 ***********************************/	//zcx190807
-typedef enum {
+typedef enum 
+{
 	ChgSt_Standby=0,            //正常待机
 	ChgSt_InCharging,           //充电中
 	ChgSt_Fault,            	//故障
-}CHGPILE_WORKSTATE;/*充电桩状态*/
+}PILE_WORKSTATE;/*充电桩状态*/
 
-/******************************** 故障信息 ***********************************/		//zcx190710
-typedef enum 
+typedef enum
 {
-//	NO_FAULT			=0x00000000,
-//	Memory_FAULT		=0x00000001,		//	终端主板内存故障（0）
-//	Clock_FAULT			=0x00000002,		//  时钟故障        （1）
-//	Board_FAULT			=0x00000004,		//  主板通信故障    （2）
-//	MeterCom_FAULT		=0x00000008,		//  485抄表故障     （3）
-//	Screen_FAULT		=0x00000010,		//  显示板故障      （4）
-//	CarrierChl_FAULT	=0x00000020,		//  载波通道异常    （5）
-//	NandF_FAULT			=0x00000040,		//	NandFLASH初始化错误  （6）
-//	ESAM_FAULT			=0x00000080,		//  ESAM错误        （7）
-//	Bluetooth_FAULT		=0x00000100,		//	蓝牙模块故障     （8）
-//	Battery_FAULT		=0x00000200,		//	电源模块故障 	（9）
-//	CanCom_FAULT		=0x00000400,		//  充电桩通信故障 （10）
-//	ChgPile_FAULT		=0x00000800,		//  充电桩设备故障 （11）
-//	OrdRecord_FAULT		=0x00001000, 		//	本地订单记录满 （12）
-	NO_FAULT=0,
-	Memory_FAULT,		//	终端主板内存故障（0）
-	Clock_FAULT,		//  时钟故障        （1）
-	Board_FAULT,		//  主板通信故障    （2）
-	MeterCom_FAULT,		//  485抄表故障     （3）
-	Screen_FAULT,		//  显示板故障      （4）
-	CarrierChl_FAULT,	//  载波通道异常    （5）
-	NandF_FAULT,		//	NandFLASH初始化错误  （6）
-	ESAM_FAULT,			//  ESAM错误        （7）
-	Bluetooth_FAULT,	//	蓝牙模块故障     （8）
-	Battery_FAULT,		//	电源模块故障 	（9）
-	CanCom_FAULT,		//  充电桩通信故障 （10）
-	ChgPile_FAULT,		//  充电桩设备故障 （11）
-	OrdRecord_FAULT, 	//	本地订单记录满 （12）
-}DEVICE_FAULT;/*路由器故障类型*/
+	GUN_A=1,
+	GUN_B,
+}GUN_NUM;/*枪序号 {A枪（1）、B枪（2）}*/
 
+typedef enum
+{
+	SEV_ENABLE=0,
+	SEV_DISABLE,
+}PILE_SERVICE;/*桩充电服务 {可用（0），停用（1）}*/
 
 typedef enum 
 {
@@ -151,27 +137,60 @@ typedef enum
 	Other_FAULT			=0x00800000,	//	充电机其他故障	（23）
 }PILE_FAULT;/*充电桩故障类型*/
 
+typedef struct
+{
+	unsigned char PileNum[17];			//充电桩编号         visible-string（SIZE(16)），
+	rt_uint8_t PileIdent;       		//充电接口标识(A/B)
+	unsigned char PileInstallAddr[41];	//充电桩的安装地址   visible-string，
+	unsigned long minChargePow;			//充电桩最低充电功率 double-long（单位：W，换算：-1），
+	unsigned long ulChargeRatePow;		//充电额定功率额定功率 double-long（单位：W，换算：-1）
+	rt_uint8_t AwakeSupport;			//是否支持唤醒    {0:不支持 1：支持}
+	rt_uint8_t WorkState;				//运行状态
+}PILE_IFO_UNIT;/*充电桩信息单元*/
 
-//typedef union 
-//{
-//	rt_uint32_t ALARM;
-//	struct
-//	{
-//		rt_uint32_t BLE_COMM:1;           //bit0//蓝牙通信故障
-//		rt_uint32_t METER_COMM:1;         //bit1//计量模块通信故障
-//		rt_uint32_t METER_VOL_HIGH:1;     //bit2//电压过高
-//		rt_uint32_t METER_VOL_LOW:1;      //bit3//电压过低
-//		rt_uint32_t METER_CUR_HIGH:1;     //bit4//过流
-//		rt_uint32_t STORAGE_NAND:1;       //bit5//flash故障
-//		rt_uint32_t RTC_COMM:1;          	//bit6//rtc通信故障
-//		rt_uint32_t ESAM_COMM:1;      		//bit7//esam通信故障
-//		rt_uint32_t HPLC_COMM:1;          //bit8//hplc通信故障
-//	}
-//	B;
-//} 
-//Systerm_Alarm;
+/******************************** 故障信息 ***********************************/		//zcx190710
+typedef enum 
+{
+	NO_FAU=0,
+	MEMORY_FAU,		//	终端主板内存故障（0）
+	CLOCK_FAU,		//  时钟故障        （1）
+	BOARD_FAU,		//  主板通信故障    （2）
+	METER_FAU,		//  485抄表故障     （3）
+	SCREEN_FAU,		//  显示板故障      （4）
+	HPLC_FAU,		//  载波通道异常    （5）
+	NANDFLSH_FAU,	//	NandFLASH初始化错误  （6）
+	ESAM_FAU,		//  ESAM错误        （7）
+	BLE_FAU,		//	蓝牙模块故障     （8）
+	BATTERY_FAU,	//	电源模块故障 	（9）
+	CANCOM_FAU,		//  充电桩通信故障 （10）
+	CHGPILE_FAU,	//  充电桩设备故障 （11）
+	ORDRECOED_FAU, 	//	本地订单记录满 （12）
+	RTC_FAU,		//	RTC通信故障 （13）
+}ROUTER_FAU;/*路由器故障类型*/
 
-
+typedef union 
+{
+	rt_err_t Total;
+	struct
+	{
+		rt_err_t Memory_Fau:1;		//	终端主板内存故障（0）
+		rt_err_t Clock_Fau:1;		//  时钟故障        （1）
+		rt_err_t Board_Fau:1;		//  主板通信故障    （2）
+		rt_err_t MeterCom_Fau:1;	//  485抄表故障     （3）
+		rt_err_t Screen_Fau:1;		//  显示板故障      （4）
+		rt_err_t Hplc_Fau:1;		//  载波通道异常    （5）
+		rt_err_t NandFlash_Fau:1;	//	NandFLASH初始化错误  （6）
+		rt_err_t ESAM_Fau:1;		//  ESAM错误        （7）
+		rt_err_t Ble_Fau:1;			//	蓝牙模块故障     （8）
+		rt_err_t Battery_Fau:1;		//	电源模块故障 	（9）
+		rt_err_t CanCom_Fau:1;		//  充电桩通信故障 （10）
+		rt_err_t ChgPile_Fau:1;		//  充电桩设备故障 （11）
+		rt_err_t OrdRecord_Fau:1; 	//	本地订单记录满 （12）
+		rt_err_t RTC_Fau:1;         //	RTC通信故障  (13)	(自定义)
+	}
+	Bit;
+}ROUTER_FAULT;
+extern ROUTER_FAULT Fault;
 //////////////////////////////////////////////////////////////////////////////////
 
 

@@ -952,13 +952,14 @@ int charge_exe_state_package(CHARGE_EXE_STATE *priv_struct,struct CharPointDataM
 int plan_fail_event_package(PLAN_FAIL_EVENT *priv_struct,struct CharPointDataManage * hplc_data);
 int Report_Cmd_DeviceFault(struct CharPointDataManage *hplc_data,struct _698_STATE  * priv_698_state);
 int Report_Cmd_PileFault(struct CharPointDataManage *hplc_data,struct _698_STATE  * priv_698_state);
+int report_notification_package(COMM_CMD_C  report_type,void *report_struct,struct CharPointDataManage * hplc_data,struct _698_STATE  * priv_698_state);
 void hplc_PWR_ON(void);
 void hplc_PWR_OFF(void);
 int security_get_package(struct _698_STATE  * priv_698_state,struct CharPointDataManage * hplc_data);
 rt_uint32_t my_strategy_event_get(void);
 int action_response_notice_user(struct  _698_FRAME  *_698_frame_rev,struct _698_STATE  * priv_698_state);
 int action_notice_user_normal(struct  _698_FRAME  *_698_frame_rev,struct _698_STATE  * priv_698_state);
-
+int judge_meter_no(struct _698_STATE  * priv_698_state,struct CharPointDataManage *data_rev);
 
 
 
